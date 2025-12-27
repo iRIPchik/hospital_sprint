@@ -1,0 +1,114 @@
+{% extends 'clinic/base.html' %}
+
+{% block title %}Расписание - {{ doctor.full_name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'clinic:doctors_list' %}">Врачи</a></li>
+        <li class="breadcrumb-item active">{{ doctor.full_name }}</li>
+    </ol>
+</nav>
+
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">
+            <i class="bi bi-person-badge"></i> Информация о враче
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2 text-center mb-3 mb-md-0">
+                <div class="doctor-avatar mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                    {{ doctor.full_name|slice:":1" }}
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h3 class="mb-3">{{ doctor.full_name }}</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <strong><i class="bi bi-award text-primary"></i> Специальность:</strong>
+                        <span class="badge bg-info ms-2">{{ doctor.specialty }}</span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong><i class="bi bi-door-open text-primary"></i> Кабинет:</strong>
+                        <span class="badge bg-secondary ms-2">{{ doctor.cabinet }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+        <i class="bi bi-calendar-week"></i> Доступное расписание
+    </h4>
+    <span class="text-muted">
+        <i class="bi bi-clock"></i> Показаны только будущие слоты
+    </span>
+</div>
+
+{% if slots %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+    {% for slot in slots %}
+    <div class="col">
+        <div class="card slot-card {% if slot.is_free %}border-success{% else %}border-danger{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-subtitle text-muted mb-0">
+                        <i class="bi bi-calendar-date"></i> 
+                        {{ slot.start_time|date:"d E Y" }}
+                    </h6>
+                    {% if slot.is_free %}
+                        <span class="badge badge-free">Свободно</span>
+                    {% else %}
+                        <span class="badge badge-busy">Занято</span>
+                    {% endif %}
+                </div>
+                <hr class="my-2">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-fill text-primary me-2"></i>
+                    <strong>{{ slot.start_time|date:"H:i" }}</strong>
+                    <span class="mx-2">—</span>
+                    <strong>{{ slot.end_time|date:"H:i" }}</strong>
+                </div>
+                <div class="text-muted small mb-2">
+                    <i class="bi bi-hourglass-split"></i> 
+                    Продолжительность: 1,5 часа
+                </div>
+                {% if slot.is_free %}
+                    <a href="{% url 'clinic:appointment_create' %}?slot_id={{ slot.id }}" 
+                       class="btn btn-success btn-sm w-100">
+                        <i class="bi bi-calendar-check"></i> Записаться
+                    </a>
+                {% else %}
+                    <button class="btn btn-secondary btn-sm w-100" disabled>
+                        <i class="bi bi-x-circle"></i> Недоступно
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="alert alert-info mt-4">
+    <i class="bi bi-info-circle"></i>
+    <strong>Найдено слотов:</strong> {{ slots|length }}
+    (свободно: {{ slots|length|add:"-1" }})
+</div>
+{% else %}
+<div class="alert alert-warning text-center" role="alert">
+    <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+    <h5>Нет доступных слотов</h5>
+    <p class="mb-0">В настоящее время у этого врача нет свободных слотов в расписании.</p>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{% url 'clinic:doctors_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад к списку врачей
+    </a>
+</div>
+{% endblock %}
